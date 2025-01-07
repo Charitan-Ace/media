@@ -1,5 +1,7 @@
 package ace.charitan.media.internal.media.service;
 
+import java.util.UUID;
+
 import ace.charitan.media.internal.common.AbstractEntity;
 import ace.charitan.media.internal.media.dto.InternalMediaDto;
 import jakarta.persistence.Entity;
@@ -26,5 +28,7 @@ class Media extends AbstractEntity implements InternalMediaDto {
     private String format;
 
     private String resourceType;
+
+    private UUID ownerId;
 
 }
