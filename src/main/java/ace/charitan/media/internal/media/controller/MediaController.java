@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,6 +30,7 @@ class MediaController {
             @RequestParam List<MultipartFile> files) {
 
         List<InternalMediaDto> mediaDtoList = mediaService.uploadImages(projectId, files);
+        return new ResponseEntity<>(null, HttpStatus.OK);
 
         
 
