@@ -4,7 +4,10 @@ import java.util.UUID;
 
 import ace.charitan.media.internal.common.AbstractEntity;
 import ace.charitan.media.internal.media.dto.InternalMediaDto;
+import ace.charitan.media.internal.media.service.MediaEnum.MediaType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,7 +26,8 @@ class Media extends AbstractEntity implements InternalMediaDto {
 
     private String publicId;
 
-    private String mediaType;
+    @Enumerated(EnumType.STRING)
+    private MediaType mediaType;
 
     private String format;
 
