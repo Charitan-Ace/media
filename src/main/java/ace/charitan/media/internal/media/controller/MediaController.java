@@ -25,7 +25,7 @@ class MediaController {
     @Autowired
     private InternalMediaService mediaService;
 
-    @PostMapping("/upload/project/{projectId}/images/{imageId}")
+    @PostMapping("/upload/images/project/{projectId}")
     ResponseEntity<InternalMediaDto> uploadImages(@PathVariable String projectId,
             @RequestParam List<MultipartFile> files) {
 

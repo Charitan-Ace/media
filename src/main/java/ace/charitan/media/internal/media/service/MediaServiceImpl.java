@@ -27,7 +27,8 @@ class MediaServiceImpl implements InternalMediaService {
     public List<InternalMediaDto> uploadImages(String projectId, List<MultipartFile> files) {
         // Check the number of images of the project
 
-        UUID projectIdUuid = UUID.fromString(projectId);
+        // UUID projectIdUuid = UUID.fromString(projectId);
+        UUID projectIdUuid = UUID.randomUUID();
 
         List<InternalMediaDto> existedImageList = mediaRepository.findAllByMediaTypeAndProjectId(MediaType.IMAGE,
                 projectIdUuid);

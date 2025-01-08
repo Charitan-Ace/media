@@ -33,6 +33,6 @@ class Media extends AbstractEntity implements InternalMediaDto {
 
     private String resourceType;
 
-    private UUID projectId;
+    private String projectId;
 
 }
