@@ -22,14 +22,14 @@ import lombok.Setter;
 @AllArgsConstructor
 class Media extends AbstractEntity implements InternalMediaDto {
 
-    private String url;
+    private String mediaUrl;
 
     private String publicId;
 
     @Enumerated(EnumType.STRING)
     private MediaType mediaType;
 
-    private String format;
+    private String mediaFormat;
 
     private String resourceType;
 

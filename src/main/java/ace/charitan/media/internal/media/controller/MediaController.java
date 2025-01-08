@@ -26,13 +26,11 @@ class MediaController {
     private InternalMediaService mediaService;
 
     @PostMapping("/upload/images/project/{projectId}")
-    ResponseEntity<InternalMediaDto> uploadImages(@PathVariable String projectId,
+    ResponseEntity<List<InternalMediaDto>> uploadImages(@PathVariable String projectId,
             @RequestParam List<MultipartFile> files) {
 
         List<InternalMediaDto> mediaDtoList = mediaService.uploadImages(projectId, files);
-        return new ResponseEntity<>(null, HttpStatus.OK);
-
-        
+        return new ResponseEntity<>(mediaDtoList, HttpStatus.OK);
 
         // List<Map<String, Object>> results = new ArrayList<>();
         // try {
