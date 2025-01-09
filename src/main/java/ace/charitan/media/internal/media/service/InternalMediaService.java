@@ -10,4 +10,6 @@ public interface InternalMediaService {
 
     List<InternalMediaDto> uploadImages(String projectId, List<MultipartFile> files);
 
+    List<InternalMediaDto> uploadVideos(String projectId, List<MultipartFile> files);
+
 }
