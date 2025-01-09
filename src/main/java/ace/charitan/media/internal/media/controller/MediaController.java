@@ -26,17 +26,15 @@ class MediaController {
 
         List<InternalMediaDto> mediaDtoList = mediaService.uploadImages(projectId, files);
         return new ResponseEntity<>(mediaDtoList, HttpStatus.OK);
-
-        // List<Map<String, Object>> results = new ArrayList<>();
-        // try {
-        // for (MultipartFile file : files) {
-        // Map<String, Object> result = mediaService.upload(file, "image");
-        // results.add(result);
-        // }
-        // return ResponseEntity.ok(results);
-        // } catch (IOException e) {
-        // return ResponseEntity.status(500).body("Error uploading images");
-        // }
     }
 
+
+    @PostMapping("/upload/images/project/{projectId}")
+    ResponseEntity<List<InternalMediaDto>> uploadVideos(@PathVariable String projectId,
+    @RequestParam List<MultipartFile> files
+    ) {
+        List<InternalMediaDto> mediaDtoList = mediaService.uploadVideos(projectId, files);
+        return new ResponseEntity<>(mediaDtoList, HttpStatus.OK);
+    }
+    
 }
