@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 
 import ace.charitan.common.dto.media.ExternalMediaDto;
 import ace.charitan.common.dto.media.GetMediaByProjectIdRequestDto;
@@ -49,7 +50,8 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
         for (MultipartFile file : files) {
             try {
                 @SuppressWarnings("unchecked")
-                Map<String, Object> uploadResponse = cloudinary.uploader().upload(file.getBytes(), Map.of());
+                Map<String, Object> uploadResponse = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+                        "folder", "charitan/project"));
                 String mediaUrl = (String) uploadResponse.get("secure_url");
                 String publicId = (String) uploadResponse.get("public_id");
                 MediaType mediaType = MediaType.IMAGE;
@@ -130,9 +132,8 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
         return new GetMediaByProjectIdResponseDto(mediaListDtoList);
     }
 
-    public void initData() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'initData'");
+    void initData() {
+
     }
 
 }

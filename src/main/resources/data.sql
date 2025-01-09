@@ -10,3 +10,22 @@ CREATE TABLE media (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- For images
+INSERT INTO media
+(
+    media_url,
+    public_id,
+    media_type,
+    media_format,
+    resource_type,
+    project_id
+)
+VALUES
+(
+    
+
+
+
+)
+
