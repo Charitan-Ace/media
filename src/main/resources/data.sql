@@ -4,7 +4,7 @@ CREATE TABLE media (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- created_at
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- updated_at
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- updated_at
     media_url VARCHAR(255),
     public_id VARCHAR(255),
     media_type VARCHAR(50),
