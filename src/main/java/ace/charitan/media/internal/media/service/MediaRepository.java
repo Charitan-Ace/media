@@ -11,6 +11,7 @@ import ace.charitan.media.internal.media.service.MediaEnum.MediaType;
 
 @Repository
 interface MediaRepository extends JpaRepository<Media, UUID> {
-    List<InternalMediaDto> findAllByMediaTypeAndProjectId(MediaType mediaType, String projectId);
+    List<Media> findAllByMediaTypeAndProjectId(MediaType mediaType, String projectId);
 
+    List<Media> findAllByProjectId(String projectId);
 }

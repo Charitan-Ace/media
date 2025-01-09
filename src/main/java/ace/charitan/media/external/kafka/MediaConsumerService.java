@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 @Component
 class MediaConsumerService {
 
+
+
     // private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = ProjectProducerTopic.PROJECT_MEDIA_GET_MEDIA_BY_PROJECT_ID, groupId = "media")
