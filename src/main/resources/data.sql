@@ -10,7 +10,8 @@ CREATE TABLE media (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-INSERT INTO -- For images
+
+-- For images
 INSERT INTO media (
         media_url,
         public_id,
