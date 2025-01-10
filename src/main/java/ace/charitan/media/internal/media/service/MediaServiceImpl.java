@@ -136,4 +136,22 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
 
     }
 
+    @Override
+    public GetMediaByProjectIdResponseDto handleGetMediaByProjectId(GetMediaByProjectIdRequestDto requestDto) {
+        List<String> projectIdList = requestDto.getProjectIdList();
+
+        List<MediaListDto> mediaListDtoList = new ArrayList<>();
+
+        for (String projectId : projectIdList) {
+            List<Media> mediaList = mediaRepository.findAllByProjectId(projectId);
+
+            List<ExternalMediaDto> externalMediaDtoList = mediaList.stream()
+                    .map(mDto -> mDto.toExternalMediaDto()).toList();
+
+            mediaListDtoList.add(new MediaListDto(projectId, externalMediaDtoList));
+        }
+
+        return new GetMediaByProjectIdResponseDto(mediaListDtoList);
+    }
+
 }

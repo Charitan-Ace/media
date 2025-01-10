@@ -2,6 +2,7 @@ package ace.charitan.media.internal.media.service;
 
 import java.util.UUID;
 
+import ace.charitan.common.dto.media.ExternalMediaDto;
 import ace.charitan.media.internal.common.AbstractEntity;
 import ace.charitan.media.internal.media.dto.InternalMediaDto;
 import ace.charitan.media.internal.media.service.MediaEnum.MediaType;
@@ -34,5 +35,9 @@ class Media extends AbstractEntity implements InternalMediaDto {
     private String resourceType;
 
     private String projectId;
+
+    ExternalMediaDto toExternalMediaDto() {
+        return new ExternalMediaDto(mediaUrl, publicId, mediaType.getValue(), mediaFormat, resourceType, projectId);
+    }
 
 }
