@@ -12,20 +12,21 @@ CREATE TABLE media (
 );
 
 -- For images
-INSERT INTO media
-(
-    media_url,
-    public_id,
-    media_type,
-    media_format,
-    resource_type,
-    project_id
-)
-VALUES
-(
+-- INSERT INTO media
+-- (
+--     media_url,
+--     public_id,
+--     media_type,
+--     media_format,
+--     resource_type,
+--     project_id
+-- )
+-- VALUES
+-- (
+
     
 
 
 
-)
+-- );
 
