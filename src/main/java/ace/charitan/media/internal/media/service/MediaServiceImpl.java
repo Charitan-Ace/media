@@ -151,6 +151,8 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
             mediaListDtoList.add(new MediaListDto(projectId, externalMediaDtoList));
         }
 
+        System.out.println(mediaListDtoList);
+
         return new GetMediaByProjectIdResponseDto(mediaListDtoList);
     }
 
