@@ -34,10 +34,13 @@ class Media extends AbstractEntity implements InternalMediaDto {
 
     private String resourceType;
 
+    private Boolean isThumbnail;
+
     private String projectId;
 
     ExternalMediaDto toExternalMediaDto() {
-        return new ExternalMediaDto(mediaUrl, publicId, mediaType.getValue(), mediaFormat, resourceType, projectId);
+        return new ExternalMediaDto(mediaUrl, publicId, mediaType.getValue(), mediaFormat, resourceType, isThumbnail,
+                projectId);
     }
 
 }
