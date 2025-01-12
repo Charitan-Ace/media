@@ -14,4 +14,6 @@ interface MediaRepository extends JpaRepository<Media, UUID> {
     List<Media> findAllByMediaTypeAndProjectId(MediaType mediaType, String projectId);
 
     List<Media> findAllByProjectId(String projectId);
+
+    List<Media> findAllByIsThumbnailAndProjectId(Boolean isThumbnail, String projectId);
 }

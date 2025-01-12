@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import javax.print.attribute.standard.MediaTray;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,28 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
     @Autowired
     private Cloudinary cloudinary;
 
+    private Media uploadMedia(MultipartFile file, Map<String, String> options, MediaType mediaType, boolean isThumbnail,
+            String projectId) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> uploadResponse = (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(),
+                    options);
+
+            String mediaUrl = (String) uploadResponse.get("secure_url");
+            String publicId = (String) uploadResponse.get("public_id");
+            String mediaFormat = (String) uploadResponse.get("format");
+            String resourceType = (String) uploadResponse.get("resource_type");
+            Media mediaEntity = new Media(mediaUrl, publicId, mediaType, mediaFormat, resourceType, isThumbnail,
+                    projectId);
+
+            return mediaEntity;
+        } catch (IOException e) {
+        }
+
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
     public List<InternalMediaDto> uploadImages(String projectId, List<MultipartFile> files) {
         // Check the number of images of the project
@@ -45,30 +70,42 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
             // TODO: MAx images allowed
         }
 
+        boolean hasThumbnail = !mediaRepository.findAllByIsThumbnailAndProjectId(true, projectId).isEmpty();
+
         List<InternalMediaDto> internalMediaDtoList = new ArrayList<>();
 
         for (MultipartFile file : files) {
-            try {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> uploadResponse = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-                        "folder", "charitan/project"));
-                String mediaUrl = (String) uploadResponse.get("secure_url");
-                String publicId = (String) uploadResponse.get("public_id");
-                MediaType mediaType = MediaType.IMAGE;
-                String mediaFormat = (String) uploadResponse.get("format");
-                String resourceType = (String) uploadResponse.get("resource_type");
-                Media mediaEntity = new Media(mediaUrl, publicId, mediaType, mediaFormat, resourceType, projectId);
-                mediaEntity = mediaRepository.save(mediaEntity);
-                internalMediaDtoList.add(mediaEntity);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            Media mediaEntity = uploadMedia(file, (Map<String, String>) ObjectUtils.asMap(
+                    "folder", "charitan/project"), MediaType.IMAGE, false, projectId);
+
+            if (!Objects.isNull(mediaEntity)) {
+                continue;
             }
+
+            mediaEntity = mediaRepository.save(mediaEntity);
+            internalMediaDtoList.add(mediaEntity);
+
+            if (hasThumbnail) {
+                continue;
+            }
+
+            Media thumbnailMediaEntity = uploadMedia(file, ObjectUtils.asMap(
+                    "folder", "charitan/image/project", "width", 600, "height", 400, "crop", "fill"), MediaType.IMAGE,
+                    true,
+                    projectId);
+
+            if (!Objects.isNull(thumbnailMediaEntity)) {
+            }
+
+            thumbnailMediaEntity = mediaRepository.save(thumbnailMediaEntity);
+            internalMediaDtoList.add(thumbnailMediaEntity);
+            hasThumbnail = true;
         }
 
         return internalMediaDtoList;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<InternalMediaDto> uploadVideos(String projectId, List<MultipartFile> files) {
         List<InternalMediaDto> existedImageList = mediaRepository.findAllByMediaTypeAndProjectId(MediaType.IMAGE,
@@ -81,21 +118,15 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
         List<InternalMediaDto> internalMediaDtoList = new ArrayList<>();
 
         for (MultipartFile file : files) {
-            try {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> uploadResponse = cloudinary.uploader().upload(file.getBytes(), Map.of());
-                String mediaUrl = (String) uploadResponse.get("secure_url");
-                String publicId = (String) uploadResponse.get("public_id");
-                MediaType mediaType = MediaType.VIDEO;
-                String mediaFormat = (String) uploadResponse.get("format");
-                String resourceType = (String) uploadResponse.get("resource_type");
-                Media mediaEntity = new Media(mediaUrl, publicId, mediaType, mediaFormat, resourceType, projectId);
-                mediaEntity = mediaRepository.save(mediaEntity);
-                internalMediaDtoList.add(mediaEntity);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            Media mediaEntity = uploadMedia(file, ObjectUtils.asMap("folder", "charitan/video/project"),
+                    MediaType.VIDEO, false, projectId);
+
+            if (Objects.isNull(mediaEntity)) {
+                continue;
             }
+
+            mediaEntity = mediaRepository.save(mediaEntity);
+            internalMediaDtoList.add(mediaEntity);
         }
 
         return internalMediaDtoList;
@@ -121,6 +152,7 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
                                 media.getMediaType().toString(),
                                 media.getMediaFormat(),
                                 media.getResourceType(),
+                                media.getIsThumbnail(),
                                 media.getProjectId());
                     })
                     .collect(Collectors.toList());
