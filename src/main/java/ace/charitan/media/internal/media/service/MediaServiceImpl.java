@@ -24,6 +24,7 @@ import ace.charitan.media.config.MediaConstant;
 import ace.charitan.media.external.service.ExternalMediaService;
 import ace.charitan.media.internal.media.dto.InternalMediaDto;
 import ace.charitan.media.internal.media.service.MediaEnum.MediaType;
+import jakarta.transaction.Transactional;
 
 @Service
 class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
@@ -37,10 +38,12 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
     private Media uploadMedia(MultipartFile file, Map<String, String> options, MediaType mediaType, boolean isThumbnail,
             String projectId) {
         try {
+            System.out.println("Start to upload images");
             @SuppressWarnings("unchecked")
             Map<String, Object> uploadResponse = (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(),
                     options);
 
+            System.out.println("End to upload images");
             String mediaUrl = (String) uploadResponse.get("secure_url");
             String publicId = (String) uploadResponse.get("public_id");
             String mediaFormat = (String) uploadResponse.get("format");
@@ -50,59 +53,71 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
 
             return mediaEntity;
         } catch (IOException e) {
+            e.printStackTrace();
         }
-
         return null;
     }
 
     @SuppressWarnings("unchecked")
     @Override
+    @Transactional
     public List<InternalMediaDto> uploadImages(String projectId, List<MultipartFile> files) {
-        // Check the number of images of the project
+        try {
 
-        // UUID projectIdUuid = UUID.fromString(projectId);
-        // UUID projectIdUuid = UUID.randomUUID();
+            // Check the number of images of the project
 
-        List<InternalMediaDto> existedImageList = mediaRepository.findAllByMediaTypeAndProjectId(MediaType.IMAGE,
-                projectId).stream().map(d -> d).collect(Collectors.toList());
+            // UUID projectIdUuid = UUID.fromString(projectId);
+            // UUID projectIdUuid = UUID.randomUUID();
 
-        if (existedImageList.size() + files.size() > MediaConstant.MAX_IMAGES) {
-            // TODO: MAx images allowed
+            List<InternalMediaDto> existedImageList = mediaRepository.findAllByMediaTypeAndProjectId(MediaType.IMAGE,
+                    projectId).stream().map(d -> d).collect(Collectors.toList());
+
+            if (existedImageList.size() + files.size() > MediaConstant.MAX_IMAGES) {
+                // TODO: MAx images allowed
+            }
+
+            boolean hasThumbnail = !mediaRepository.findAllByIsThumbnailAndProjectId(true, projectId).isEmpty();
+
+            List<InternalMediaDto> internalMediaDtoList = new ArrayList<>();
+
+            for (MultipartFile file : files) {
+                Media mediaEntity = uploadMedia(file, (Map<String, String>) ObjectUtils.asMap(
+                        "folder", "charitan/image/project"), MediaType.IMAGE, false, projectId);
+
+                if (Objects.isNull(mediaEntity)) {
+                    continue;
+                }
+
+                mediaEntity = mediaRepository.save(mediaEntity);
+                internalMediaDtoList.add(mediaEntity);
+
+                if (hasThumbnail) {
+                    continue;
+                }
+
+                Media thumbnailMediaEntity = uploadMedia(file, ObjectUtils.asMap(
+                        "folder", "charitan/image/project", "width", 600, "height", 400, "crop",
+                        "fill"),
+                        MediaType.IMAGE,
+                        true,
+                        projectId);
+
+                if (Objects.isNull(thumbnailMediaEntity)) {
+                    continue;
+                }
+
+                thumbnailMediaEntity = mediaRepository.save(thumbnailMediaEntity);
+                internalMediaDtoList.add(thumbnailMediaEntity);
+                hasThumbnail = true;
+            }
+
+            System.out.println(internalMediaDtoList.size());
+            return internalMediaDtoList;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        boolean hasThumbnail = !mediaRepository.findAllByIsThumbnailAndProjectId(true, projectId).isEmpty();
-
-        List<InternalMediaDto> internalMediaDtoList = new ArrayList<>();
-
-        for (MultipartFile file : files) {
-            Media mediaEntity = uploadMedia(file, (Map<String, String>) ObjectUtils.asMap(
-                    "folder", "charitan/project"), MediaType.IMAGE, false, projectId);
-
-            if (!Objects.isNull(mediaEntity)) {
-                continue;
-            }
-
-            mediaEntity = mediaRepository.save(mediaEntity);
-            internalMediaDtoList.add(mediaEntity);
-
-            if (hasThumbnail) {
-                continue;
-            }
-
-            Media thumbnailMediaEntity = uploadMedia(file, ObjectUtils.asMap(
-                    "folder", "charitan/image/project", "width", 600, "height", 400, "crop", "fill"), MediaType.IMAGE,
-                    true,
-                    projectId);
-
-            if (!Objects.isNull(thumbnailMediaEntity)) {
-            }
-
-            thumbnailMediaEntity = mediaRepository.save(thumbnailMediaEntity);
-            internalMediaDtoList.add(thumbnailMediaEntity);
-            hasThumbnail = true;
-        }
-
-        return internalMediaDtoList;
+        return List.of();
     }
 
     @SuppressWarnings("unchecked")
