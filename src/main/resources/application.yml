@@ -69,3 +69,6 @@ cloudinary:
   cloud-name: doorb2fhk
   api-key: "655692397845443"
   api-secret: i-rOG1bgedhtZxqkIuj_5ZV5dHI
+
+server:
+  port: 0
