@@ -16,7 +16,6 @@ import ace.charitan.media.internal.media.dto.InternalMediaDto;
 import ace.charitan.media.internal.media.service.InternalMediaService;
 import org.springframework.web.bind.annotation.GetMapping;
 
-
 @RestController
 class MediaController {
 
@@ -25,9 +24,8 @@ class MediaController {
 
     // @GetMapping("/health")
     // public String getMethodName(@RequestParam String param) {
-    //     return new String();
+    // return new String();
     // }
-    
 
     @PostMapping("/upload/image/project/{projectId}")
     ResponseEntity<List<InternalMediaDto>> uploadImages(@PathVariable String projectId,
@@ -42,6 +40,12 @@ class MediaController {
             @RequestBody List<MultipartFile> files) {
         List<InternalMediaDto> mediaDtoList = mediaService.uploadVideos(projectId, files);
         return new ResponseEntity<>(mediaDtoList, HttpStatus.OK);
+    }
+
+    @GetMapping("/thumbnail/image/{publicId}")
+    public ResponseEntity<String> getThumbnailUrl(@PathVariable String publicId) {
+        String thumbnailUrl = mediaService.getThumbnailUrl(publicId);
+        return new ResponseEntity<>(thumbnailUrl, HttpStatus.OK);
     }
 
 }

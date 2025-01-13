@@ -7,13 +7,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import javax.print.attribute.standard.MediaTray;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 
 import ace.charitan.common.dto.media.ExternalMediaDto;
@@ -35,11 +34,11 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
     @Autowired
     private Cloudinary cloudinary;
 
+    @SuppressWarnings("unchecked")
     private Media uploadMedia(MultipartFile file, Map<String, String> options, MediaType mediaType, boolean isThumbnail,
             String projectId) {
         try {
             System.out.println("Start to upload images");
-            @SuppressWarnings("unchecked")
             Map<String, Object> uploadResponse = (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(),
                     options);
 
@@ -96,7 +95,7 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
                 }
 
                 Media thumbnailMediaEntity = uploadMedia(file, ObjectUtils.asMap(
-                        "folder", "charitan/image/project", "width", 600, "height", 400, "crop",
+                        "folder", "charitan/image/project", "width", 150, "height", 100, "crop",
                         "fill"),
                         MediaType.IMAGE,
                         true,
@@ -201,6 +200,13 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
         System.out.println(mediaListDtoList);
 
         return new GetMediaByProjectIdResponseDto(mediaListDtoList);
+    }
+
+    @Override
+    public String getThumbnailUrl(String publicId) {
+        return cloudinary.url().transformation(new Transformation<>().width(150).height(100).crop("thumb"))
+                .generate(publicId);
+
     }
 
 }

@@ -16,4 +16,6 @@ public interface InternalMediaService {
 
     GetMediaByProjectIdResponseDto handleGetMediaByProjectId(GetMediaByProjectIdRequestDto dto);
 
+    String getThumbnailUrl(String publicId);
+
 }
