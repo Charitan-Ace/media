@@ -1,0 +1,6 @@
+GET http://localhost:8080/media/thumbnail/image/iaw594cngwup2bdfgy7p
+
+
+###
+GET https://res.cloudinary.com/doorb2fhk/image/upload/c_thumb,h_100,w_150/iaw594cngwup2bdfgy7p?_a=DAGAACAVZAA0
+Content-Type: text/plain

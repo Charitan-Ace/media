@@ -7,13 +7,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import javax.print.attribute.standard.MediaTray;
-
+import ace.charitan.common.dto.project.UpdateProjectMediaDto;
+import com.netflix.discovery.converters.Auto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 
 import ace.charitan.common.dto.media.ExternalMediaDto;
@@ -35,11 +36,14 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
     @Autowired
     private Cloudinary cloudinary;
 
+    @Autowired
+    private MediaProducerService mediaProducerService;
+
+    @SuppressWarnings("unchecked")
     private Media uploadMedia(MultipartFile file, Map<String, String> options, MediaType mediaType, boolean isThumbnail,
             String projectId) {
         try {
             System.out.println("Start to upload images");
-            @SuppressWarnings("unchecked")
             Map<String, Object> uploadResponse = (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(),
                     options);
 
@@ -51,11 +55,26 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
             Media mediaEntity = new Media(mediaUrl, publicId, mediaType, mediaFormat, resourceType, isThumbnail,
                     projectId);
 
+
             return mediaEntity;
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private void updateProjectMedia(String projectId) {
+
+        // Get external media list (query all media of that project)
+        List<Media> mediaList = mediaRepository.findAllByProjectId(projectId);
+        List<ExternalMediaDto> externalMediaDtoList = mediaList
+                .stream().map(Media::toExternalMediaDto)
+                .toList();
+
+        // Update project media in Kafka
+        mediaProducerService.send(new UpdateProjectMediaDto.UpdateProjectMediaRequestDto(
+                projectId, externalMediaDtoList
+        ));
     }
 
     @SuppressWarnings("unchecked")
@@ -76,8 +95,6 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
                 // TODO: MAx images allowed
             }
 
-            boolean hasThumbnail = !mediaRepository.findAllByIsThumbnailAndProjectId(true, projectId).isEmpty();
-
             List<InternalMediaDto> internalMediaDtoList = new ArrayList<>();
 
             for (MultipartFile file : files) {
@@ -91,27 +108,13 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
                 mediaEntity = mediaRepository.save(mediaEntity);
                 internalMediaDtoList.add(mediaEntity);
 
-                if (hasThumbnail) {
-                    continue;
-                }
-
-                Media thumbnailMediaEntity = uploadMedia(file, ObjectUtils.asMap(
-                        "folder", "charitan/image/project", "width", 600, "height", 400, "crop",
-                        "fill"),
-                        MediaType.IMAGE,
-                        true,
-                        projectId);
-
-                if (Objects.isNull(thumbnailMediaEntity)) {
-                    continue;
-                }
-
-                thumbnailMediaEntity = mediaRepository.save(thumbnailMediaEntity);
-                internalMediaDtoList.add(thumbnailMediaEntity);
-                hasThumbnail = true;
             }
 
             System.out.println(internalMediaDtoList.size());
+
+            updateProjectMedia(projectId);
+
+
             return internalMediaDtoList;
         } catch (Exception e) {
             e.printStackTrace();
@@ -143,6 +146,8 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
             mediaEntity = mediaRepository.save(mediaEntity);
             internalMediaDtoList.add(mediaEntity);
         }
+
+        updateProjectMedia(projectId);
 
         return internalMediaDtoList;
     }
@@ -201,6 +206,13 @@ class MediaServiceImpl implements InternalMediaService, ExternalMediaService {
         System.out.println(mediaListDtoList);
 
         return new GetMediaByProjectIdResponseDto(mediaListDtoList);
+    }
+
+    @Override
+    public String getThumbnailUrl(String publicId) {
+        return cloudinary.url().transformation(new Transformation<>().width(150).height(100).crop("thumb"))
+                .generate(publicId);
+
     }
 
 }
