@@ -22,7 +22,7 @@ class MediaConsumerService {
     // private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = ProjectProducerTopic.PROJECT_MEDIA_GET_MEDIA_BY_PROJECT_ID)
-    @SendTo(KafkaHeaders.REPLY_TOPIC)
+    @SendTo
     GetMediaByProjectIdResponseDto handleGetMediaByProjectId(GetMediaByProjectIdRequestDto dto) {
         System.out.println(dto.getProjectIdList());
         return mediaService.handleGetMediaByProjectId(dto);
